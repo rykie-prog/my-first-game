@@ -1,17 +1,97 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+
+//JSX notation to mimick html
+
+const Block = (props) => {
+    return (
+        <button 
+        className='block'
+        onClick={props.onClickEvent}
+        >
+            {props.value}
+        </button>
+    );
+};
+
+const Primary = () => {
+    const initialBlocks = Array(9).fill(null);
+    const [blocks, setBlocks] = useState(initialBlocks);
+    const [xTurn, setXTurn] = useState(true);
+
+    const handleClickEvent = (i) => {
+        const newBlocks = [...blocks];
+
+        const winDetermined = Boolean(determineWin(newBlocks));
+        const blockFilled = Boolean(newBlocks[i]);
+        if (winDetermined || blockFilled) {
+            return;
+        }
+
+        newBlocks[i] = xTurn ? 'X' : 'O';
+        setBlocks(newBlocks);
+        setXTurn(!xTurn);
+    };
+    
+    const renderBlock = (i) => {
+        return (
+            <Block 
+            value={blocks[i]} 
+            onClickEvent={() => handleClickEvent(i)}
+            />
+        );
+    };
+
+    const winner = determineWin(blocks);
+    const status = winner ?
+    `Winner: ${winner}` :
+    `Current Turn: ${xTurn ? 'X' : 'O'}`;
+
+    return (
+        <div>
+            <div className='status'>{status}</div>
+            <div className='primary-row'>
+                {renderBlock(0)}{renderBlock(1)}{renderBlock(2)}
+            </div>
+            <div className='primary-row'>
+                {renderBlock(3)}{renderBlock(4)}{renderBlock(5)}
+            </div>
+            <div className='primary-row'>
+                {renderBlock(6)}{renderBlock(7)}{renderBlock(8)}
+            </div>
+        </div>
+    );
+};
+
+const App = () => {
+    return (
+        <div className='app'>
+            X's and O's
+            <Primary />
+        </div>
+    );
+};
 
 ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
+    <App />,
+    document.getElementById('root')
 );
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+function determineWin(blocks) {
+    const lines = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 6], [2, 4, 6],
+    ];
+
+    for (let line of lines) {
+        const [a, b, c] = line;
+
+        if (blocks[a] && blocks[a] === blocks[b] && blocks[a] === blocks[c]) {
+            return blocks[a];
+        }
+    }
+
+    return null;
+}
